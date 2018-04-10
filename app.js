@@ -144,6 +144,27 @@ app.get('/map', function (req, res) {
 app.get('/twitter-sign-in', controllers.twitter_sign_in.get)
 app.get(config.twitter.oauth_callback_uri, controllers.twitter_sign_in_callback.get)
 
+// Route for admin dashboard
+app.get('/admin', function (req, res) { res.render(path.join(__dirname, '/app/views/admin.hbs')) })
+
+app.get('/api/v1/admin', function (req, res) { res.status(400).send('You do not belong here!') })
+
+app.post('/api/v1/admin', resources.v1.admin.post)
+
+app.get('/assets/scripts/admin.js', browserify(path.join(__dirname, '/assets/scripts/admin.js'), {
+  cache: false,
+  precompile: true,
+  extensions: [ '.jsx' ],
+  transform: [babelify, envify({
+    APP_HOST_PORT: config.get('app_host_port'),
+    FACEBOOK_APP_ID: config.get('facebook_app_id'),
+    API_URL: config.get('restapi_proxy_baseuri_rel'),
+    TWITTER_CALLBACK_URI: config.get('twitter').oauth_callback_uri,
+    ENV: config.get('env'),
+    NO_INTERNET_MODE: config.get('no_internet_mode')
+  })]
+}))
+
 app.post('/api/v1/users', resources.v1.users.post)
 app.get('/api/v1/users/:user_id', resources.v1.users.get)
 app.put('/api/v1/users/:user_id', resources.v1.users.put)
